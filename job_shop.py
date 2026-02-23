@@ -9,9 +9,10 @@ log = logging.getLogger(__name__)
 
 GENERATIONS = 2000
 POP_SIZE = 150
-KEEP = 30  # elitizam
-TOURNAMENT_SIZE = 50
-MUTATION_RATE = 20
+KEEP_PERC = 10
+TOURNAMENT_SIZE = 5
+MUTATION_COUNT = 20
+MUTATION_DECAY = 0.02
 
 
 class JobShop:
@@ -108,19 +109,21 @@ class JobShop:
             i, j = random.sample(range(len(individual)), 2)
             individual[i], individual[j] = individual[j], individual[i]
 
-    def iterate_mutate(self, individual, mutation_rate):
-        while mutation_rate > 1:
+    def iterate_mutate(self, individual, mutation_count):
+        if mutation_count > 1:
             self.mutate(individual, 1)
-            mutation_rate = mutation_rate % 1
+            mutation_rate = mutation_count % 1
+        else:
+            mutation_rate = mutation_count
         self.mutate(individual, mutation_rate)
 
     def solve(
         self,
         pop_size=POP_SIZE,
         generations=GENERATIONS,
-        mutation_rate=MUTATION_RATE,
+        mutation_count=MUTATION_COUNT,
         tournament_size=TOURNAMENT_SIZE,
-        keep=KEEP,
+        keep=KEEP_PERC * POP_SIZE // 100,
     ):
         population = [
             {"chromosome": self.init_chromosome(), "fitness": -1}
@@ -138,17 +141,17 @@ class JobShop:
                 parent2 = self.selection(population, tournament_size)["chromosome"]
 
                 child = self.order_crossover(parent1, parent2)
-                self.iterate_mutate(child, mutation_rate * (i / (pop_size - keep)))
+                self.iterate_mutate(child, mutation_count * (i / (pop_size - keep)))
                 new_population[i]["chromosome"] = child
 
             population = new_population
             best = min(population, key=lambda ind: self.fitness(ind))
             best_history[gen] = self.fitness(best)
 
-            if mutation_rate > 2:
-                mutation_rate *= 0.998
+            if mutation_count > 2:
+                mutation_count *= 1 - MUTATION_DECAY
             not gen % 20 and log.debug(
-                f"Generation {gen}, Best Makespan: {self.fitness(best)}, Current mutation rate: {mutation_rate}"
+                f"Generation {gen}, Best Makespan: {self.fitness(best)}, Current mutation rate: {mutation_count}"
             )
 
         best_individual = min(population, key=lambda ind: self.fitness(ind))
@@ -185,7 +188,8 @@ def plot_convergence(history):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Genetic Algorithm for Job Shop Scheduling"
+        description="Genetic Algorithm for Job Shop Scheduling",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--jobs_file", type=str, default="jobs.txt", help="Path to the jobs file"
@@ -197,7 +201,7 @@ def main():
         "--generations", type=int, default=GENERATIONS, help="Number of generations"
     )
     parser.add_argument(
-        "--mutation_rate", type=float, default=MUTATION_RATE, help="Mutation rate"
+        "--mutation_count", type=float, default=MUTATION_COUNT, help="Mutation count"
     )
     parser.add_argument(
         "--tournament_size",
@@ -206,10 +210,10 @@ def main():
         help="Tournament size for selection",
     )
     parser.add_argument(
-        "--keep",
+        "--keep_perc",
         type=int,
-        default=KEEP,
-        help="Number of elite individuals to keep",
+        default=KEEP_PERC,
+        help="Percentage of best individuals to keep (elitism)",
     )
     args = parser.parse_args()
 
@@ -218,9 +222,9 @@ def main():
     best, history = js.solve(
         args.population_size,
         args.generations,
-        args.mutation_rate,
+        args.mutation_count,
         args.tournament_size,
-        args.keep,
+        args.keep_perc * args.population_size // 100,
     )
 
     best_makespan, best_schedule = js.decode(best["chromosome"])
