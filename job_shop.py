@@ -127,25 +127,18 @@ class JobShop:
             for _ in range(pop_size)
         ]
         best_history = [-1] * generations
-        current_keep = keep // 3
         for gen in range(generations):
-            kbest = heapq.nsmallest(
-                current_keep, population, key=lambda ind: self.fitness(ind)
-            )
+            kbest = heapq.nsmallest(keep, population, key=lambda ind: self.fitness(ind))
             new_population = [
-                {"chromosome": None, "fitness": -1}
-                for _ in range(pop_size - current_keep)
+                {"chromosome": None, "fitness": -1} for _ in range(pop_size - keep)
             ]
-            # print(kbest,'\n')
             new_population.extend(kbest)
-            for i in range(pop_size - current_keep):
+            for i in range(pop_size - keep):
                 parent1 = self.selection(population, tournament_size)["chromosome"]
                 parent2 = self.selection(population, tournament_size)["chromosome"]
 
                 child = self.order_crossover(parent1, parent2)
-                self.iterate_mutate(
-                    child, mutation_rate * (i / (pop_size - current_keep))
-                )
+                self.iterate_mutate(child, mutation_rate * (i / (pop_size - keep)))
                 new_population[i]["chromosome"] = child
 
             population = new_population
@@ -154,11 +147,8 @@ class JobShop:
 
             if mutation_rate > 2:
                 mutation_rate *= 0.998
-            if current_keep < keep:
-                if random.random() < 0.02:
-                    current_keep += 1
             not gen % 20 and log.debug(
-                f"Generation {gen}, Best Makespan: {self.fitness(best)}, Current mutation rate: {mutation_rate}, Currently retaining: {current_keep}"
+                f"Generation {gen}, Best Makespan: {self.fitness(best)}, Current mutation rate: {mutation_rate}"
             )
 
         best_individual = min(population, key=lambda ind: self.fitness(ind))
