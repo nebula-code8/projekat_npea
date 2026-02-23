@@ -11,7 +11,7 @@ GENERATIONS = 2000
 POP_SIZE = 150
 KEEP_PERC = 10
 TOURNAMENT_SIZE = 5
-MUTATION_COUNT = 20
+MUTATION_COUNT = 2
 MUTATION_DECAY = 0.02
 
 
@@ -110,12 +110,9 @@ class JobShop:
             individual[i], individual[j] = individual[j], individual[i]
 
     def iterate_mutate(self, individual, mutation_count):
-        if mutation_count > 1:
-            self.mutate(individual, 1)
-            mutation_rate = mutation_count % 1
-        else:
-            mutation_rate = mutation_count
-        self.mutate(individual, mutation_rate)
+        while mutation_count > 0:
+            self.mutate(individual, mutation_count)
+            mutation_count -= 1
 
     def solve(
         self,
