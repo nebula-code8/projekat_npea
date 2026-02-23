@@ -110,12 +110,50 @@ C_max = max {s(O_(i n_i)) + t_(i n_i) : i in {1, dots, n}}
 $
 = Rešenje problema
 == Struktura programa
+```
+usage: job_shop.py [-h] [--jobs_file JOBS_FILE] [--population_size POPULATION_SIZE] [--generations GENERATIONS] [--mutation_count MUTATION_COUNT]
+                   [--tournament_size TOURNAMENT_SIZE] [--keep_perc KEEP_PERC]
+
+Genetic Algorithm for Job Shop Scheduling
+
+options:
+  -h, --help            show this help message and exit
+  --jobs_file JOBS_FILE
+                        Path to the jobs file (default: jobs.txt)
+  --population_size POPULATION_SIZE
+                        Population size (default: 150)
+  --generations GENERATIONS
+                        Number of generations (default: 2000)
+  --mutation_count MUTATION_COUNT
+                        Mutation count (default: 20)
+  --tournament_size TOURNAMENT_SIZE
+                        Tournament size for selection (default: 5)
+  --keep_perc KEEP_PERC
+                        Percentage of best individuals to keep (elitism) (default: 10)
+```
+Program `job_shop.py` rešava problem job shop scheduling koristeći genetski algoritam. Ulaz programa je tekstualni fajl formata:
+```
+n m
+t_11 M_11 t_12 M_12 ... t_1n_1 M_1n
+t_21 M_21 t_22 M_22 ... t_2n_2 M_2n
+...
+t_n1 M_n1 t_n2 M_n2 ... t_nn_n M_nn
+```
+gde su `n` i `m` redom broj poslova i mašina, a `t_ij` i `M_ij` su vreme trajanja i mašina na kojoj se obrađuje `j`-ta operacija `i`-tog posla. Program zatim koristi genetski algoritam da pronađe optimalan raspored obrade poslova na mašinama, minimizirajući ukupno vreme završetka (makespan). Rezultat programa je optimalan raspored i pripadajući makespan. Pored toga, program generiše vizualizaciju rasporeda u obliku _Ganttovog dijagrama_, što omogućava lakše razumevanje i analizu rešenja, ali i graf konvergencije genetskog algoritma, koji prikazuje kako se rešenje poboljšava tokom iteracija algoritma.
+#figure(
+  image("images/Gantt_ft06.png", width: 80%),
+  caption: "Ganttov dijagram rasporeda poslova na mašinama za instancu ft06."
+)
+#figure(
+  image("images/Conv_ft06.png", width: 60%),
+  caption: "Graf konvergencije genetskog algoritma za instancu ft06."
+)
 == Genetski algoritam
- - Kriterijum optimalnosti
- - Selekcija
- - Mutacija
- - Ukrštanje
- - Elitizam
- - Parametri algoritma
+ - _Hromozom_ je predstavljen kao niz indeksa poslova, gde se svaki posao pojavljuje onoliko puta koliko ima operacija. Funkcija ```python decode()``` je zadužena za dekodiranje hromozoma u konkretan raspored operacija određenih torkom ```python (job_id, machine, start, finish)```. Ona se poziva prilikom evaluacije pojedinca i dekodiranja u svrhe prikaza rezultata.
+ - Za _kriterijum optimalnosti_ uzeto je ukupno vreme završetka (_makespan_), koje se računa kao maksimalno vreme završetka svih operacija.
+ - _Selekcija_ se vrši _turnirskom selekcijom_, gde se nasumično bira nekoliko pojedinaca iz populacije, a najbolji među njima se bira za reprodukciju. Korisnik može da podešava veličinu turnira putem parametra `--tournament_size`. Defaultna vrednost je 5.
+ - _Mutacija_ se vrši tako što se nasumično odabere nekoliko pozicija u hromozomu i zamene se sa drugim nasumično odabranim pozicijama. Broj mutacija po pojedincu se podešava putem parametra `--mutation_count`, sa defaultnom vrednošću od 20. 
+ - _Ukrštanje_ se vrši _Order Crossover-om_ (OX), koji je pogodan za probleme permutacije poput job shop scheduling. Funkcioniše tako što se nasumično odabere segment hromozoma od jednog roditelja, a zatim se preostali poslovi popunjavaju redosledom iz drugog roditelja, preskačući već uključene poslove.
+ - _Elitizam_ je implementiran tako da se određeni procenat najboljih pojedinaca (definisan parametrom `--keep_perc`, sa defaultnom vrednošću od 10%) direktno prenosi u sledeću generaciju, čime se osigurava da se najbolja rešenja ne gube tokom evolucije.
 = Zaključak
  - Rezultati algoritma
