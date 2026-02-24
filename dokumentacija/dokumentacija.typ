@@ -156,4 +156,9 @@ gde su `n` i `m` redom broj poslova i mašina, a `t_ij` i `M_ij` su vreme trajan
  - _Ukrštanje_ se vrši _Order Crossover-om_ (OX), koji je pogodan za probleme permutacije poput job shop scheduling. Funkcioniše tako što se nasumično odabere segment hromozoma od jednog roditelja, a zatim se preostali poslovi popunjavaju redosledom iz drugog roditelja, preskačući već uključene poslove.
  - _Elitizam_ je implementiran tako da se određeni procenat najboljih pojedinaca (definisan parametrom `--keep_perc`, sa defaultnom vrednošću od 10%) direktno prenosi u sledeću generaciju, čime se osigurava da se najbolja rešenja ne gube tokom evolucije.
 = Zaključak
- - Rezultati algoritma
+Testiranje je obavljeno na par standardnih instanci problema job shop scheduling (Fisher i Thompsonove, Lawrenceove instance), koje su široko korišćene u literaturi za evaluaciju algoritama za ovaj problem. Za manje instance (npr. ft06), genetski algoritam je uspešno pronašao optimalna rešenja, dok su za veće instance (npr. la40) postignuta rešenja sa relativnom greškom u odnosu na optimalna rešenja <14%. Ovi rezultati su u skladu sa očekivanjima, s obzirom da je trenutna implementacija primitivna. Na osnovu ovih testiranja, eksperimentalno su odabarni parametri algoritma.
+#let benchmarks = csv("benchmarks.csv")
+#table(
+  columns: 7,
+  ..benchmarks.flatten()
+)
