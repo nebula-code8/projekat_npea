@@ -11,8 +11,9 @@ GENERATIONS = 2000
 POP_SIZE = 150
 KEEP_PERC = 10
 TOURNAMENT_SIZE = 5
-MUTATION_COUNT = 2
-MUTATION_DECAY = 0.02
+MUTATION_COUNT = 5
+MUTATION_DECAY = 0.001
+MUTATION_LIMIT = 2
 
 
 class JobShop:
@@ -145,7 +146,7 @@ class JobShop:
             best = min(population, key=lambda ind: self.fitness(ind))
             best_history[gen] = self.fitness(best)
 
-            if mutation_count > 2:
+            if mutation_count > MUTATION_LIMIT:
                 mutation_count *= 1 - MUTATION_DECAY
             not gen % 20 and log.debug(
                 f"Generation {gen}, Best Makespan: {self.fitness(best)}, Current mutation rate: {mutation_count}"

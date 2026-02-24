@@ -66,7 +66,6 @@ def main():
         "--filename",
         type=str,
         help="Path to the benchmark file",
-        required=True,
     )
     parser.add_argument(
         "--generations",
@@ -95,9 +94,28 @@ def main():
         default=job_shop.KEEP_PERC,
         help="Number of elite individuals to keep",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Run benchmark on all files in the benchmarks directory",
+    )
     args = parser.parse_args()
 
-    run_benchmark(args)
+    if args.all:
+        import os
+
+        benchmark_dir = "benchmarks"
+        for filename in os.listdir(benchmark_dir):
+            if filename.endswith(".txt"):
+                args.filename = os.path.join(benchmark_dir, filename)
+                run_benchmark(args)
+    else:
+        if not args.filename:
+            print(
+                "Please provide a filename with --filename or use --all to run on all benchmarks."
+            )
+            return
+        run_benchmark(args)
 
 
 if __name__ == "__main__":
